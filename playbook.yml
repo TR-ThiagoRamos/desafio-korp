@@ -2,33 +2,40 @@
 - name: Provisionar Ambiente Desafio Korp
   hosts: localhost
   connection: local
-  become: true
+  become: yes
 
   tasks:
+    # Garante instalação dos pacotes
     - name: Garantir que pacotes essenciais estao instalados
-      ansible.builtin.apt:
+      apt:
         name:
+          - curl
           - docker.io
-          - docker-compose
+          - docker-compose-v2
         state: present
         update_cache: yes
 
+    # Sobe todos os containers da aplicação via Docker Compose
     - name: Executar Docker Compose
       command: docker compose up -d --build
       args:
         chdir: "{{ playbook_dir }}"
 
+    # Pausa para inicialização dos serviços
     - name: Aguardar o ambiente inicializar
       pause:
         seconds: 5
 
+    # Valida a rota pública via Nginx
     - name: Validar o funcionamento do servico via curl
       uri:
         url: "http://localhost:80/projeto-korp"
         method: GET
+        status_code: 200
         return_content: yes
-      register: response_validation
+      register: response
 
+    # Exibe a resposta JSON retornada pelo Go no console do Ansible
     - name: Exibir resposta da aplicacao no console
       debug:
-        msg: "Resposta recebida: {{ response_validation.content }}"
+        msg: "Resposta recebida: {{ response.content }}"

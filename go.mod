@@ -1,3 +1,4 @@
+// Módulo do microserviço Go para o Desafio Korp
 module desafio-korp
 
 go 1.22

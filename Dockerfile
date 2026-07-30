@@ -1,12 +1,23 @@
+# Definindo a versao da build
 FROM golang:1.22-alpine AS builder
-WORKDIR /app
-COPY go.mod ./
-RUN go mod download
-COPY . .
-RUN CGO_ENABLED=0 GOOS=linux go build -o http-server-projeto-korp .
 
-FROM alpine:latest
 WORKDIR /app
-COPY --from=builder /app/http-server-projeto-korp .
+
+# Copia arquivos de dependência e baixa
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copia o código-fonte e compila
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+
+# Estágio final de execução
+FROM alpine:latest
+WORKDIR /root/
+
+# Copia o binário compilado
+COPY --from=builder /app/main .
+
+# Expõe a porta 8080 e define o como iniciar
 EXPOSE 8080
-CMD ["./http-server-projeto-korp"]
+CMD ["./main"]

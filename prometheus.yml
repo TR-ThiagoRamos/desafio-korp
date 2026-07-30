@@ -1,7 +1,11 @@
+# Configuração global de coleta do Prometheus
 global:
+  # Intervalo de tempo para buscar métricas nos targets
   scrape_interval: 5s
 
+# Definição dos alvos (targets) de monitoramento
 scrape_configs:
   - job_name: 'http-server-projeto-korp'
     static_configs:
+      # Endereço e porta da API Go exposta na rede do Docker
       - targets: ['http-server-projeto-korp:8080']
