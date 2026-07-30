@@ -1,0 +1,34 @@
+---
+- name: Provisionar Ambiente Desafio Korp
+  hosts: localhost
+  connection: local
+  become: true
+
+  tasks:
+    - name: Garantir que pacotes essenciais estao instalados
+      ansible.builtin.apt:
+        name:
+          - docker.io
+          - docker-compose
+        state: present
+        update_cache: yes
+
+    - name: Executar Docker Compose
+      command: docker compose up -d --build
+      args:
+        chdir: "{{ playbook_dir }}"
+
+    - name: Aguardar o ambiente inicializar
+      pause:
+        seconds: 5
+
+    - name: Validar o funcionamento do servico via curl
+      uri:
+        url: "http://localhost:80/projeto-korp"
+        method: GET
+        return_content: yes
+      register: response_validation
+
+    - name: Exibir resposta da aplicacao no console
+      debug:
+        msg: "Resposta recebida: {{ response_validation.content }}"
